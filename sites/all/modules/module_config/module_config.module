@@ -1,0 +1,275 @@
+<?php
+
+/* implement the module config hooks
+ * @author Chokri Tliche
+ */
+
+include_once 'module_config.inc';
+
+/*
+ * hook bootstrap
+ * to force module load in bootstrap
+ */
+
+function module_config_boot()
+{
+  //include_once 'module_config.inc';
+}
+
+/*
+ * hook menu
+ */
+
+function module_config_menu()
+{
+    $items = array();
+
+    $items['admin/system-config'] = array(
+        'title'             => 'Module Configuration',
+        'description'       => 'Listing an hierarchical configuration data',
+        'page callback'     => '_module_config_page',
+        'access arguments'  => array('administer configurations'),
+        'page arguments'    => array(),
+        'type'              => MENU_NORMAL_ITEM,
+    );
+    
+    return $items;
+}
+
+/*
+ * hook menu page callback
+ * charge the module config main page
+ * and block content
+ * @param string $op loading option
+ * @return string HTML sources
+ */
+
+function _module_config_page($op = NULL)
+{
+    static $config_data;
+
+    $html_output = t('Select a config option from tabs');
+    
+    if(!is_object($config_data))
+    {
+       // load config data from config files	   	
+       $config_data = new Module_config();
+       $config_data->module_config_load_config_data();
+	   
+       if(!empty($config_data->config_data))
+       {
+           // process loaded config data to schema
+           $config_data->module_config_process_config_data();
+       }
+    }
+
+    if('tabs' == $op)
+    {
+        $tabs = array();        
+        if(!empty($config_data->config_data))
+        {
+            $weight = 0;
+            foreach($config_data->config_data as $module => $conf)
+            {                
+               if(!empty($conf[$module]['weight']))
+               {
+                    $tabs[$conf[$module]['tab']]
+                         [intval($conf[$module]['weight'])]
+                         [$module] = $conf[$module];
+               }
+               else
+               {
+                    $tabs[$conf[$module]['tab']]
+                         [0]
+                         [$module] = $conf[$module];
+               }
+            }            
+        }        
+        return $tabs;
+    }
+    elseif($op and isset($config_data->config_data[$op]))
+    {        
+        $html_output = drupal_get_form('module_config_form', $config_data->config_data[$op]['groups']);
+    }
+
+    return $html_output;
+}
+
+/*
+ * load default block content
+ * @return string HTML source
+ */
+
+function _module_config_display_tab_block()
+{
+    if(user_access('administer configurations'))
+    {
+      $tabs = _module_config_page('tabs');
+      return theme('module_config_tabs', $tabs);
+    }
+}
+
+/*
+ * hook permission
+ */
+
+function module_config_perm()
+{
+    return array(
+        'administer configurations'
+    );
+}
+
+/*
+ * hook block
+ * add Module configuration block as naviagation menu
+ * 
+ */
+
+function module_config_block($op = 'list', $delta = 0, $edit = array())
+{
+    if($op == 'list')
+    {
+        $blocks[] = array(
+            'info'      => t('Dynamic Module Configuration'),
+            'weight'    => 0,
+            'status'    => 1,
+            'region'    => 'admin_left',
+            'cache'     => BLOCK_NO_CACHE
+        );
+        return $blocks;
+    }
+    elseif ($op == 'view')
+    {
+        $block = array(
+          'subject' => t('Module Configuration'),
+          'content' => _module_config_display_tab_block(),
+        );
+        return $block;
+    }    
+}
+
+/*
+ * hook theme
+ * module config list of theme functions
+ */
+
+function module_config_theme()
+{
+    return array(
+        'module_config_tabs' => array(
+            'arguments' => array('tabs' => NULL),
+            'file'      => 'module_config_theme.inc'
+        ),
+        'module_config_groups' => array(
+            'arguments' => array('groups' => NULL),
+            'file'      => 'module_config_theme.inc'
+        ),
+        'module_config_field' => array(
+            'arguments' => array('field'),
+            'file'      => 'module_config_theme.inc'
+        ),
+    );
+}
+
+function module_config_form(&$form_state, $groups)
+{
+
+    $form = array('#attributes' => array('enctype' => 'multipart/form-data'));
+    $groups = _module_config_groups($groups);    
+    
+    foreach($groups as $gkey => $group)
+    {
+        $form['groups'][$gkey] = $group;
+    }
+
+    // Add the buttons.
+    $form['buttons'] = array('#weight' => 1000);
+    $form['buttons']['submit'] = array(
+        '#type'     => 'submit',
+        '#value'    => t('Save'),
+        '#weight'   => 5,
+    );
+    $form['buttons']['rebuild'] = array(
+        '#type' => 'submit',
+        '#value' => t('Reset to default'),
+        '#weight' => 10,
+    );
+
+    return $form;
+}
+
+/*
+ * form submit
+ */
+
+function module_config_form_submit($form, &$form_state)
+{
+    if(strtolower($form_state['values']['op']) === 'save')
+    {      
+        foreach($form['groups'] as $gkey => $value)
+        {
+            if(is_int($gkey) or 'group' === $gkey)
+            {
+                if(isset($form_state['values'][$gkey]['fields']))
+                {                  
+                    _module_config_variable_save(
+                            $form_state['values'][$gkey]['fields'],
+                            $form['groups'][$gkey]['fields']);
+                }
+            }
+        }
+    }
+    elseif($form_state['values']['op'] == 'Reset to default')
+    {
+            $_SESSION['module_config'] = 'reset';
+    }
+}
+
+/*
+ * form validate
+ */
+
+function module_config_form_validate($form, &$form_state)
+{    
+    if('save' == strtolower($form_state['values']['op']))
+    {
+        //dpm($form_state);
+    }
+    else{
+      form_set_error(NULL, '', TRUE);
+      drupal_get_messages();
+    }
+}
+
+/*
+ * load module configuration by module name
+ * @param string $module resource name
+ * @param array $additionals_conf 
+ */
+
+function module_config($module, $additionals_conf = array())
+{
+    static $conf = array();
+
+    if(!isset($conf[$module]))
+    {
+        $conf[$module] = Module_config_model::module_config_get_module_config($module, 1);
+    }
+    
+    if(is_array($additionals_conf))
+    {
+        if(!empty($conf[$module]))
+        {
+          $conf[$module] = array_merge($conf[$module]['variables'], $additionals_conf);
+        }
+        else
+        {
+          $conf[$module] = $additionals_conf;
+        }
+    }    
+
+    return $conf[$module];
+}
+
+//var_dump(module_config('module_config'));

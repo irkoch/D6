@@ -1,0 +1,132 @@
+<?php
+
+/*
+ * @author Chokri Tliche
+ *
+ */
+
+function module_config_install()
+{
+    // create tables
+    drupal_install_schema('module_config');
+
+    // New module weights in core: put module config in the end of the chain.
+    db_query("UPDATE {system} SET weight = %d WHERE name = '%s'", 85, 'module_config');
+}
+
+function module_config_uninstall()
+{
+    // delete associated tables
+    drupal_uninstall_schema('module_config');
+}
+
+/*
+ * implementation of hook schema
+ */
+
+function module_config_schema()
+{
+    $schema['module_config'] = array(
+        'description' => 'The base table for system configuration data',
+        'fields' => array(
+            'id' => array(
+                'description'   => 'the primary identifier for module config',
+                'type'          => 'serial',
+                'unsigned'      => NULL,
+                'not null'      => TRUE
+            ),
+            'name' => array(
+                'description'   => 'the name of the system resource' ,
+                'type'          => 'varchar',
+                'length'        => 255,
+                'not null'      => TRUE,
+                'default'       => ''
+            ),
+            'type' => array(
+                'description'   => 'the type of the resource config',
+                'type'          => 'varchar',
+                'length'        => 16,
+                'not null'      => TRUE,
+                'default'       => ''
+            ),
+            'status' => array(
+                'description'   => 'the status of resource',
+                'type'          => 'int',
+                'lenght'        => 1,
+                'not null'      => TRUE,
+                'default'       => 0
+            ),
+        ),
+        'indexes' => array(
+            'name' => array('name')
+        ),
+        'unique keys' => array(
+            'name_type' => array('name', 'type')
+        ),
+        'primary key' => array('id'),
+    );
+
+    $schema['module_config_variable'] = array(
+        'description' => 'The base of the config fields set as variables',
+        'fields' => array(
+            'scid' => array(
+                'description'   => 'The system config foreign key',
+                'type'          => 'serial',
+                'unsigned'      => NULL,
+                'not null'      => TRUE
+            ),
+            'name' => array(
+                'description'   => 'the id name of the variable',
+                'type'          => 'varchar',
+                'length'          => 255,
+                'not null'      => TRUE,
+                'default'       => ''
+            ),
+            'value' => array(
+                'description'   => 'the serialised value of the variable',
+                'type'          => 'text',
+                'size'          => 'medium',
+                'not null'      => FALSE,
+                'default'       => ''
+            )
+        ),
+        'foreign keys' => array(
+            'module_config_key' => array(
+                'table' => 'module_config',
+                'columns' => array('scid', 'id')
+            )
+        ),
+        'unique keys' => array(
+            'scid_name' => array('scid', 'name')
+        ),
+    );
+/*
+    $schema['module_config_hierarchy'] = array(
+        'description' => 'implement the complete structured hierarchy of the resource config',
+        'fields' => array(
+            'id' => array(
+                'description'   => 'the primary identifier of the hierarchy',
+                'type'          => 'serial',
+                'unsignet'      => NULL,
+                'not null'      => TRUE
+            ),
+            'scid' => array(
+                'description'   => 'the foreign for system config table',
+                'type'          => 'serial',
+                'unsignet'      => NULL,
+                'not null'      => TRUE
+            ),
+            'type' => array(
+                'description'   => 'the type of structure',
+                'type'          => 'varchar',
+                'size'          => 'normal',
+                'not null'      => TRUE,
+                'default'       => ''
+            ),
+        )
+        
+    );
+  */
+    
+    return $schema;
+}

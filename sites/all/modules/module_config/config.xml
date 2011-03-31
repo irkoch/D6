@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : config.xml
+    Created on : December 26, 2010, 3:40 PM
+    Author     : Chokri Tliche
+    Description:
+        Purpose of the document follows.
+-->
+
+<config>
+    <module_config type="module">
+        <label>Configuration</label>
+        <tab>General</tab>
+        <weight>1</weight>
+        <active>true</active>
+    </module_config>
+    <groups>
+        <group>
+            <title>Group 2</title>
+            <weight>10</weight>
+            <collapsed>false</collapsed>
+            <fields>
+                <field name="field_5">
+                    <title>Text area 1</title>
+                    <type>textarea</type>
+                    <cols>30</cols>
+                    <line>5</line>
+                    <weight>-10</weight>
+                    <required>true</required>
+                    <default_value>textarea 5 default value</default_value>
+                </field>
+                <field name="field_6">
+                    <title>Field 2</title>
+                    <type>select</type>
+                    <multiple>false</multiple>
+                    <options>
+                        <option value="opt1"><label>Option 1</label></option>
+                        <option value="opt2"><label>Option 2</label></option>
+                        <option value="opt3"><label>Option 3</label></option>
+                        <option value="opt4"><label>Option 4</label></option>
+                    </options>
+                    <weight>6</weight>
+                </field>
+                <field name="field_12">
+                    <title>Attach new file</title>
+                    <type>file</type>
+                    <size>40</size>
+                    <weight>-21</weight>
+                </field>
+                <field name="field_55">
+                    <title>Text area 55</title>
+                    <type>textarea</type>
+                    <cols>30</cols>
+                    <line>5</line>
+                    <weight>-22</weight>
+                    <required>true</required>
+                    <default_value>textarea 55 default value</default_value>
+                </field>
+            </fields>
+        </group>        
+              <group>
+            <title>Group 1.1</title>
+            <weight>100</weight>
+            <fields>
+                <field name="field_3">
+                    <title>Field 3</title>
+                    <type>textfield</type>
+                    <size>20</size>
+                    <maxlength>30</maxlength>
+                    <weight>10</weight>
+                    <default_value>field 3 default value</default_value>
+                </field>
+                <field name="field_4">
+                    <title>Field 2</title>
+                    <type>select</type>
+                    <multiple>false</multiple>
+                    <options>
+                        <option value="opt1">Option 1</option>
+                        <option value="opt2">Option 2</option>
+                        <option value="opt3">Option 3</option>
+                        <option value="opt4">Option 4</option>
+                    </options>
+                    <weigth>0</weigth>
+                </field>
+            </fields>
+        </group>            
+        <group>
+            <title>Group 1</title>
+            <weight>0</weight>
+            <fields>
+                <field name="field_1">
+                    <title>Field 1</title>
+                    <type>textfield</type>
+                    <size>20</size>
+                    <maxlength>30</maxlength>
+                    <weight>10</weight>
+                    <default_value>field 1 default value</default_value>
+                    <description>description for the field Field 1</description>
+                </field>
+                <field name="field_2">
+                    <title>Field 2</title>
+                    <type>select</type>
+                    <multiple>true</multiple>
+                    <options>
+                        <option value="opt1"><label>Option 1</label></option>
+                        <option value="opt2"><label>Option 2</label></option>
+                        <option value="opt3"><label>Option 3</label></option>
+                        <option value="opt4"><label>Option 4</label></option>
+                    </options>
+                    <weigth>0</weigth>
+                    <default_value>opt3</default_value>
+                </field>
+                <field name="field_11">
+                    <title>Field 11</title>
+                    <type>textfield</type>
+                    <size>20</size>
+                    <maxlength>30</maxlength>
+                    <weight>10</weight>
+                    <default_value>field 11 default value</default_value>
+                    <description>description for the field Field 1</description>
+                </field>
+            </fields>
+        </group>       
+    </groups>
+</config>
